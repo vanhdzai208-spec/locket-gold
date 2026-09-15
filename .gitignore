@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env*
+!.env.example
+!.env*.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Scratch & Temporary
+scratch/
+tmp/
+coverage/
+*.tsbuildinfo
+feed_diagnostics.json
+diagnostic*.json
+probe*.json
+*.temp*
+*.temp_token*
+*.token*
+*token.txt
+*token*.json
+*token*.txt
+.*session*.json
+data/
+apps/backend/data/

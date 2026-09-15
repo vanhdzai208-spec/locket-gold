@@ -1,0 +1,24 @@
+# Sensitive credentials & tokens
+.temp_token*
+*.temp_token*
+probe*.json
+
+# Environment files
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Version control & OS
+.git/
+.gitignore
+.dockerignore
+.DS_Store
+Thumbs.db

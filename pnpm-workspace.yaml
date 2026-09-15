@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+allowBuilds:
+  '@nestjs/core': true
+overrides:
+  multer: ^2.3.0
+

@@ -1,0 +1,32 @@
+{
+  "name": "locket-web-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.17.0",
+  "description": "Locket Web Client - Full-stack application with Image Editor & Locket API Integration",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev": "pnpm --parallel --filter backend --filter frontend dev",
+    "build:backend": "pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "test:backend": "pnpm --filter backend test",
+    "test": "pnpm --filter backend test"
+  },
+  "keywords": [
+    "locket",
+    "nestjs",
+    "nextjs",
+    "image-editor",
+    "reverse-engineering"
+  ],
+  "author": "",
+  "license": "MIT",
+  "overrides": {
+    "multer": "^2.3.0"
+  },
+  "dependencies": {
+    "express": "^4.22.1"
+  }
+}

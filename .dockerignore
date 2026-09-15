@@ -1,0 +1,30 @@
+# Sensitive credentials & tokens
+.temp_token*
+*.temp_token*
+probe*.json
+chat-audit-store*
+data/
+apps/backend/data/
+
+# Environment files
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+coverage/
+
+# Version control & OS
+.git/
+.gitignore
+.dockerignore
+.DS_Store
+Thumbs.db
