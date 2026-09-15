@@ -30,6 +30,8 @@ export interface UserPreviewResult {
     hasGold: boolean;
     expiresDate?: string;
     productId?: string;
+    isYearly?: boolean;
+    durationLabel?: string;
   };
 }
 
@@ -123,12 +125,36 @@ export class GoldService implements OnModuleDestroy {
     return DEFAULT_MASTER_UID;
   }
 
+  detectIsYearly(productId?: string, expiresDate?: string): boolean {
+    const pid = (productId || '').toLowerCase();
+    if (
+      pid.includes('1y') ||
+      pid.includes('3600') ||
+      pid.includes('year') ||
+      pid.includes('annual') ||
+      pid.includes('p1y') ||
+      pid.includes('12m')
+    ) {
+      return true;
+    }
+    if (expiresDate) {
+      const expTime = new Date(expiresDate).getTime();
+      // If expiry date is more than 45 days in the future, it's a yearly/multi-month subscription
+      if (expTime - Date.now() > 45 * 86400000) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   async checkMasterStatus(customUid?: string): Promise<{
     masterUid: string;
     hasGold: boolean;
     expiresDate?: string;
     productId?: string;
     isStillValid: boolean;
+    isYearly?: boolean;
+    durationLabel?: string;
     message: string;
   }> {
     const masterUid = this.getMasterUid(customUid);
@@ -148,11 +174,8 @@ export class GoldService implements OnModuleDestroy {
         const expiresDate = gold.expires_date;
         const isStillValid =
           !expiresDate || new Date(expiresDate).getTime() > Date.now();
-        const durationLabel =
-          gold.product_identifier?.includes('1y') ||
-          gold.product_identifier?.includes('3600')
-            ? '1 Năm'
-            : '1 Tháng';
+        const isYearly = this.detectIsYearly(gold.product_identifier, expiresDate);
+        const durationLabel = isYearly ? '1 Năm' : '1 Tháng';
         const formattedDate = expiresDate
           ? new Date(expiresDate).toLocaleDateString('vi-VN')
           : 'vĩnh viễn';
@@ -163,6 +186,8 @@ export class GoldService implements OnModuleDestroy {
           expiresDate: expiresDate || undefined,
           productId: gold.product_identifier,
           isStillValid,
+          isYearly,
+          durationLabel,
           message: isStillValid
             ? `Master UID hoạt động (Gói ${durationLabel}, Hạn: ${formattedDate})`
             : 'Gói Gold của Master UID này đã hết hạn',
@@ -261,6 +286,8 @@ export class GoldService implements OnModuleDestroy {
     hasGold: boolean;
     expiresDate?: string;
     productId?: string;
+    isYearly?: boolean;
+    durationLabel?: string;
   }> {
     try {
       const rcRes = await axios.get(
@@ -279,10 +306,13 @@ export class GoldService implements OnModuleDestroy {
         const isStillValid =
           !expiresDate || new Date(expiresDate).getTime() > Date.now();
         if (isStillValid) {
+          const isYearly = this.detectIsYearly(ent.product_identifier, expiresDate);
           return {
             hasGold: true,
             expiresDate: expiresDate || undefined,
             productId: ent.product_identifier,
+            isYearly,
+            durationLabel: isYearly ? '1 Năm' : '1 Tháng',
           };
         }
       }
@@ -503,11 +533,10 @@ export class GoldService implements OnModuleDestroy {
             const formattedDate = expiresDate
               ? new Date(expiresDate).toLocaleDateString('vi-VN')
               : 'vĩnh viễn';
-            const isYearly =
-              goldEntitlement.product_identifier?.includes('1y') ||
-              goldEntitlement.product_identifier?.includes('3600') ||
-              (expiresDate &&
-                new Date(expiresDate).getTime() - Date.now() > 60 * 86400000);
+            const isYearly = this.detectIsYearly(
+              goldEntitlement.product_identifier,
+              expiresDate,
+            );
             const durationLabel = isYearly ? '1 Năm' : '1 Tháng';
 
             this.logger.log(
@@ -599,11 +628,10 @@ export class GoldService implements OnModuleDestroy {
           : 'vĩnh viễn';
 
         if (isStillValid) {
-          const isYearly =
-            goldEntitlement.product_identifier?.includes('1y') ||
-            goldEntitlement.product_identifier?.includes('3600') ||
-            (expiresDate &&
-              new Date(expiresDate).getTime() - Date.now() > 60 * 86400000);
+          const isYearly = this.detectIsYearly(
+            goldEntitlement.product_identifier,
+            expiresDate,
+          );
           const durationLabel = isYearly ? '1 Năm' : '1 Tháng';
 
           return {

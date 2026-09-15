@@ -251,7 +251,10 @@ export default function GoldPublicPage() {
                     <span className="text-yellow-400 font-semibold">
                       @{previewUser.username}
                     </span>{' '}
-                    đã được kích hoạt gói Locket Gold VIP (Hạn dùng đến 15/10/2026).
+                    đã được kích hoạt gói Locket Gold VIP (Gói {selectedPackage === '1y' ? '1 Năm' : '1 Tháng'}
+                    {queueStatus?.result?.expiresDate || masterStatus?.expiresDate
+                      ? ` - Hạn dùng đến: ${new Date(queueStatus?.result?.expiresDate || masterStatus?.expiresDate || '').toLocaleDateString('vi-VN')}`
+                      : ` - Hạn dùng: ${new Date(Date.now() + (selectedPackage === '1y' ? 365 : 30) * 86400000).toLocaleDateString('vi-VN')}`}).
                   </p>
                 </div>
 
@@ -373,7 +376,7 @@ export default function GoldPublicPage() {
                     ) : masterStatus?.isStillValid ? (
                       <div className="flex items-center gap-2 text-xs sm:text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full font-semibold">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span>Gold Active</span>
+                        <span>Gold Active ({masterStatus.durationLabel || (masterStatus.isYearly ? '1 Năm' : '1 Tháng')})</span>
                         {masterStatus.expiresDate && (
                           <span className="text-emerald-500/80 text-xs">
                             ({new Date(masterStatus.expiresDate).toLocaleDateString('vi-VN')})
@@ -522,30 +525,46 @@ export default function GoldPublicPage() {
                     </div>
 
                     {/* Step 3: Active VIP Package Card */}
-                    <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-yellow-400/15 via-amber-400/5 to-transparent border border-yellow-400/30 relative overflow-hidden">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm sm:text-base font-extrabold text-white flex items-center gap-1.5">
-                              <Sparkles className="w-4 h-4 text-yellow-400" />
-                              Gói Locket Gold VIP
-                            </span>
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-400 text-black font-extrabold shadow-sm">
-                              ĐANG HOẠT ĐỘNG
-                            </span>
+                    {(() => {
+                      const userGold = previewUser.goldInfo?.hasGold;
+                      const durationLabel = userGold
+                        ? (previewUser.goldInfo?.durationLabel || (previewUser.goldInfo?.isYearly ? '1 Năm' : '1 Tháng'))
+                        : (masterStatus?.durationLabel || (masterStatus?.isYearly ? '1 Năm' : (selectedPackage === '1y' ? '1 Năm' : '1 Tháng')));
+                      const expiryDisplay = userGold
+                        ? (previewUser.goldInfo?.expiresDate
+                            ? new Date(previewUser.goldInfo.expiresDate).toLocaleDateString('vi-VN')
+                            : 'Vĩnh viễn')
+                        : (masterStatus?.expiresDate
+                            ? new Date(masterStatus.expiresDate).toLocaleDateString('vi-VN')
+                            : new Date(Date.now() + (selectedPackage === '1y' ? 365 : 30) * 86400000).toLocaleDateString('vi-VN'));
+
+                      return (
+                        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-yellow-400/15 via-amber-400/5 to-transparent border border-yellow-400/30 relative overflow-hidden">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm sm:text-base font-extrabold text-white flex items-center gap-1.5">
+                                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                                  Gói Locket Gold VIP
+                                </span>
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-400 text-black font-extrabold shadow-sm">
+                                  {userGold ? 'ĐÃ KÍCH HOẠT' : 'ĐANG HOẠT ĐỘNG'}
+                                </span>
+                              </div>
+                              <p className="text-xs sm:text-sm text-yellow-300 font-medium">
+                                Gói kích hoạt hiện tại: <strong>{durationLabel}</strong> - Hạn dùng: <strong>{expiryDisplay}</strong>
+                              </p>
+                              <p className="text-xs text-neutral-400 leading-relaxed">
+                                Hệ thống tự động kích hoạt đặc quyền VIP qua Master Bot bản quyền Apple Store.
+                              </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-2xl bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center flex-shrink-0">
+                              <Crown className="w-6 h-6 text-yellow-400" />
+                            </div>
                           </div>
-                          <p className="text-xs sm:text-sm text-yellow-300 font-medium">
-                            Gói kích hoạt hiện tại: <strong>1 Tháng</strong> - Hạn dùng: <strong>15/10/2026</strong>
-                          </p>
-                          <p className="text-xs text-neutral-400 leading-relaxed">
-                            Hệ thống tự động kích hoạt đặc quyền VIP qua Master Bot bản quyền Apple Store.
-                          </p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center flex-shrink-0">
-                          <Crown className="w-6 h-6 text-yellow-400" />
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {/* Action Button */}
                     <button

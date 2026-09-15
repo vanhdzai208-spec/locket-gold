@@ -274,7 +274,7 @@ export default function UidLookupPage() {
                   {userData.goldInfo?.hasGold ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 text-xs font-bold">
                       <Crown className="w-3 h-3" />
-                      Locket Gold VIP
+                      Locket Gold VIP ({userData.goldInfo.durationLabel || (userData.goldInfo.isYearly ? '1 Năm' : '1 Tháng')})
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.06] text-neutral-400 border border-white/10 text-xs">
@@ -292,7 +292,7 @@ export default function UidLookupPage() {
                   <p className="text-xs text-yellow-400/90 flex items-center justify-center sm:justify-start gap-1 pt-0.5">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>
-                      Hạn dùng Gold:{' '}
+                      Gói {userData.goldInfo.durationLabel || (userData.goldInfo.isYearly ? '1 Năm' : '1 Tháng')} • Hạn dùng:{' '}
                       {userData.goldInfo.expiresDate
                         ? new Date(userData.goldInfo.expiresDate).toLocaleDateString('vi-VN')
                         : 'Vĩnh viễn'}

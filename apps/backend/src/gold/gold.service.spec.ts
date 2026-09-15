@@ -163,7 +163,7 @@ describe('GoldService', () => {
       expect(res.productId).toBe('locket_199_1m');
     });
 
-    it('should check master Gold status correctly', async () => {
+    it('should check master Gold status correctly and identify 1 year package', async () => {
       mockedAxios.get.mockResolvedValueOnce({
         status: 200,
         data: {
@@ -184,6 +184,51 @@ describe('GoldService', () => {
       expect(masterStatus.hasGold).toBe(true);
       expect(masterStatus.isStillValid).toBe(true);
       expect(masterStatus.productId).toBe('locket_3600_1y');
+      expect(masterStatus.isYearly).toBe(true);
+      expect(masterStatus.durationLabel).toBe('1 Năm');
+      expect(masterStatus.message).toContain('1 Năm');
+    });
+
+    it('should correctly identify 1 year package with annual product identifier or long expiry', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        status: 200,
+        data: {
+          subscriber: {
+            entitlements: {
+              Gold: {
+                product_identifier: 'com.locket.annual',
+                expires_date: new Date(Date.now() + 300 * 86400000).toISOString(),
+              },
+            },
+          },
+        },
+      });
+
+      const masterStatus = await service.checkMasterStatus('uid_annual_subscriber_123');
+      expect(masterStatus.isYearly).toBe(true);
+      expect(masterStatus.durationLabel).toBe('1 Năm');
+      expect(masterStatus.message).toContain('1 Năm');
+    });
+
+    it('should correctly identify 1 month package', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        status: 200,
+        data: {
+          subscriber: {
+            entitlements: {
+              Gold: {
+                product_identifier: 'locket_199_1m',
+                expires_date: new Date(Date.now() + 20 * 86400000).toISOString(),
+              },
+            },
+          },
+        },
+      });
+
+      const masterStatus = await service.checkMasterStatus('uid_monthly_subscriber_12');
+      expect(masterStatus.isYearly).toBe(false);
+      expect(masterStatus.durationLabel).toBe('1 Tháng');
+      expect(masterStatus.message).toContain('1 Tháng');
     });
   });
 

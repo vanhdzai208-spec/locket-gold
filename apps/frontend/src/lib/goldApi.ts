@@ -33,6 +33,8 @@ export interface GoldUserPreview {
     hasGold: boolean;
     expiresDate?: string;
     productId?: string;
+    isYearly?: boolean;
+    durationLabel?: string;
   };
 }
 
@@ -64,6 +66,8 @@ export interface MasterStatusResult {
   expiresDate?: string;
   productId?: string;
   isStillValid: boolean;
+  isYearly?: boolean;
+  durationLabel?: string;
   message: string;
 }
 

@@ -253,7 +253,7 @@ export default function LocketGoldModal({ isOpen, onClose }: LocketGoldModalProp
                   </span>
                 </div>
                 <p className="text-xs text-yellow-300 font-medium">
-                  Gói kích hoạt hiện tại: <strong>1 Tháng</strong> - Hạn dùng: <strong>15/10/2026</strong>
+                  Gói kích hoạt hiện tại: <strong>{selectedPackage === '1y' ? '1 Năm' : '1 Tháng'}</strong> - Hạn dùng: <strong>{new Date(Date.now() + (selectedPackage === '1y' ? 365 : 30) * 86400000).toLocaleDateString('vi-VN')}</strong>
                 </p>
                 <p className="text-[11px] text-neutral-400">
                   Tài khoản tự động kế thừa bản quyền Locket Gold VIP trực tiếp từ Master Bot.
@@ -424,9 +424,15 @@ export default function LocketGoldModal({ isOpen, onClose }: LocketGoldModalProp
                         <p className="text-sm font-bold text-white truncate">
                           {previewFriend.displayName}
                         </p>
-                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 font-semibold flex-shrink-0">
-                          Đã xác minh
-                        </span>
+                        {previewFriend.goldInfo?.hasGold ? (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-yellow-400 text-black font-extrabold flex-shrink-0">
+                            Gold ({previewFriend.goldInfo.durationLabel || (previewFriend.goldInfo.isYearly ? '1 Năm' : '1 Tháng')})
+                          </span>
+                        ) : (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 font-semibold flex-shrink-0">
+                            Đã xác minh
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-yellow-400 font-medium truncate mt-0.5">
                         @{previewFriend.username || 'locket_user'}
