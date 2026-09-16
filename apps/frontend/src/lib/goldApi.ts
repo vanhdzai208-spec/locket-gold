@@ -35,6 +35,8 @@ export interface GoldUserPreview {
     productId?: string;
     isYearly?: boolean;
     durationLabel?: string;
+    isAliasLimited?: boolean;
+    canShareGold?: boolean;
   };
 }
 
@@ -68,6 +70,8 @@ export interface MasterStatusResult {
   isStillValid: boolean;
   isYearly?: boolean;
   durationLabel?: string;
+  isAliasLimited?: boolean;
+  canShareGold?: boolean;
   message: string;
 }
 

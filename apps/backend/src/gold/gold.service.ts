@@ -32,6 +32,8 @@ export interface UserPreviewResult {
     productId?: string;
     isYearly?: boolean;
     durationLabel?: string;
+    isAliasLimited?: boolean;
+    canShareGold?: boolean;
   };
 }
 
@@ -110,14 +112,17 @@ export class GoldService implements OnModuleDestroy {
   // ============================================================================
 
   getMasterUid(customUid?: string): string {
-    if (customUid && /^[a-zA-Z0-9]{28}$/.test(customUid.trim())) {
-      return customUid.trim();
+    if (customUid) {
+      const clean = customUid.replace(/\s+/g, '');
+      if (/^[a-zA-Z0-9]{28}$/.test(clean)) {
+        return clean;
+      }
     }
     const envMasterUid = this.configService
       .get<string>('LOCKET_MASTER_GOLD_UID')
       ?.trim();
-    if (envMasterUid && /^[a-zA-Z0-9]{28}$/.test(envMasterUid)) {
-      return envMasterUid;
+    if (envMasterUid && /^[a-zA-Z0-9]{28}$/.test(envMasterUid.replace(/\s+/g, ''))) {
+      return envMasterUid.replace(/\s+/g, '');
     }
     if (this.botUid) {
       return this.botUid;
@@ -155,6 +160,8 @@ export class GoldService implements OnModuleDestroy {
     isStillValid: boolean;
     isYearly?: boolean;
     durationLabel?: string;
+    isAliasLimited?: boolean;
+    canShareGold?: boolean;
     message: string;
   }> {
     const masterUid = this.getMasterUid(customUid);
@@ -180,23 +187,53 @@ export class GoldService implements OnModuleDestroy {
           ? new Date(expiresDate).toLocaleDateString('vi-VN')
           : 'vĩnh viễn';
 
+        // Check if master account has reached RevenueCat's 50 alias limit
+        let isAliasLimited = false;
+        try {
+          await axios.post(
+            `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(masterUid)}/alias`,
+            { new_app_user_id: masterUid },
+            {
+              headers: {
+                Authorization: REVENUECAT_AUTH_KEY,
+                'Content-Type': 'application/json',
+              },
+              timeout: 3000,
+            },
+          );
+        } catch (aliasErr: any) {
+          if (aliasErr.response?.data?.code === 7255) {
+            isAliasLimited = true;
+          }
+        }
+
+        let message = isStillValid
+          ? `Master UID hoạt động (Gói ${durationLabel}, Hạn: ${formattedDate})`
+          : 'Gói Gold của Master UID này đã hết hạn';
+
+        if (isStillValid && isAliasLimited) {
+          message = `Tài khoản có Gold (${durationLabel}) nhưng ĐÃ HẾT LƯỢT CHIA SẺ (Đã đạt giới hạn 50/50 Alias của RevenueCat)`;
+        }
+
         return {
           masterUid,
           hasGold: isStillValid,
           expiresDate: expiresDate || undefined,
           productId: gold.product_identifier,
-          isStillValid,
+          isStillValid: isStillValid && !isAliasLimited,
           isYearly,
           durationLabel,
-          message: isStillValid
-            ? `Master UID hoạt động (Gói ${durationLabel}, Hạn: ${formattedDate})`
-            : 'Gói Gold của Master UID này đã hết hạn',
+          isAliasLimited,
+          canShareGold: isStillValid && !isAliasLimited,
+          message,
         };
       }
       return {
         masterUid,
         hasGold: false,
         isStillValid: false,
+        isAliasLimited: false,
+        canShareGold: false,
         message: 'Tài khoản Master này chưa kích hoạt Locket Gold',
       };
     } catch (err: any) {
@@ -204,6 +241,8 @@ export class GoldService implements OnModuleDestroy {
         masterUid,
         hasGold: false,
         isStillValid: false,
+        isAliasLimited: false,
+        canShareGold: false,
         message: `Không thể kết nối RevenueCat kiểm tra: ${err.message}`,
       };
     }
@@ -288,10 +327,13 @@ export class GoldService implements OnModuleDestroy {
     productId?: string;
     isYearly?: boolean;
     durationLabel?: string;
+    isAliasLimited?: boolean;
+    canShareGold?: boolean;
   }> {
     try {
+      const cleanUid = uid.trim().replace(/\s+/g, '');
       const rcRes = await axios.get(
-        `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(uid)}`,
+        `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(cleanUid)}`,
         {
           headers: {
             Authorization: REVENUECAT_AUTH_KEY,
@@ -305,6 +347,27 @@ export class GoldService implements OnModuleDestroy {
         const expiresDate = ent.expires_date;
         const isStillValid =
           !expiresDate || new Date(expiresDate).getTime() > Date.now();
+
+        // Check if account has reached RevenueCat's 50 alias limit
+        let isAliasLimited = false;
+        try {
+          await axios.post(
+            `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(cleanUid)}/alias`,
+            { new_app_user_id: cleanUid },
+            {
+              headers: {
+                Authorization: REVENUECAT_AUTH_KEY,
+                'Content-Type': 'application/json',
+              },
+              timeout: 3000,
+            },
+          );
+        } catch (aliasErr: any) {
+          if (aliasErr.response?.data?.code === 7255) {
+            isAliasLimited = true;
+          }
+        }
+
         if (isStillValid) {
           const isYearly = this.detectIsYearly(ent.product_identifier, expiresDate);
           return {
@@ -313,12 +376,22 @@ export class GoldService implements OnModuleDestroy {
             productId: ent.product_identifier,
             isYearly,
             durationLabel: isYearly ? '1 Năm' : '1 Tháng',
+            isAliasLimited,
+            canShareGold: !isAliasLimited,
+          };
+        } else {
+          return {
+            hasGold: false,
+            expiresDate: expiresDate || undefined,
+            productId: ent.product_identifier,
+            isAliasLimited,
+            canShareGold: false,
           };
         }
       }
-      return { hasGold: false };
+      return { hasGold: false, isAliasLimited: false, canShareGold: false };
     } catch {
-      return { hasGold: false };
+      return { hasGold: false, isAliasLimited: false, canShareGold: false };
     }
   }
 
@@ -552,9 +625,17 @@ export class GoldService implements OnModuleDestroy {
           }
         }
       } catch (aliasErr: any) {
+        const rcCode = aliasErr.response?.data?.code;
+        const rcMsg = aliasErr.response?.data?.message || aliasErr.message;
         this.logger.warn(
-          `Master Bot alias notice for UID ${uid}: ${aliasErr.response?.data?.message || aliasErr.message}`,
+          `Master Bot alias notice for UID ${uid}: [Code ${rcCode}] ${rcMsg}`,
         );
+
+        if (rcCode === 7255) {
+          throw new BadRequestException(
+            'Tài khoản Master này đã đạt giới hạn tối đa 50 lượt chia sẻ của RevenueCat (Error 7255: Alias limit reached). Vui lòng sử dụng một tài khoản Master có Gold khác!',
+          );
+        }
       }
     }
 

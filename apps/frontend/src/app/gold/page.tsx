@@ -77,7 +77,8 @@ export default function GoldPublicPage() {
   }, []);
 
   const handleCheckMaster = async (customUid?: string) => {
-    const uidToCheck = customUid !== undefined ? customUid : masterUidInput;
+    const raw = customUid !== undefined ? customUid : masterUidInput;
+    const uidToCheck = raw.trim().replace(/\s+/g, '');
     setIsLoadingMaster(true);
     try {
       const status = await goldApi.getMasterStatus(uidToCheck || undefined);
@@ -157,10 +158,11 @@ export default function GoldPublicPage() {
     setQueueStatus(null);
 
     try {
+      const cleanMaster = masterUidInput ? masterUidInput.trim().replace(/\s+/g, '') : undefined;
       const initialStatus = await goldApi.submitPublicUpgrade(
         previewUser.username,
         selectedPackage,
-        masterUidInput || undefined,
+        cleanMaster,
       );
       setQueueStatus(initialStatus);
       setCountdown(initialStatus.estimatedSeconds || 5);
@@ -383,6 +385,11 @@ export default function GoldPublicPage() {
                           </span>
                         )}
                       </div>
+                    ) : masterStatus?.isAliasLimited ? (
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-3.5 py-1.5 rounded-full font-semibold">
+                        <AlertCircle className="w-4 h-4 text-red-400" />
+                        <span>Có Gold nhưng ĐÃ LIMIT 50/50</span>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full font-semibold">
                         <AlertCircle className="w-4 h-4 text-amber-400" />
@@ -438,6 +445,16 @@ export default function GoldPublicPage() {
                       </button>
                     )}
                   </div>
+
+                  {/* Warning if Master UID is limited */}
+                  {masterStatus?.isAliasLimited && (
+                    <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2.5 animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">
+                        Tài khoản Master này <b>đã đạt giới hạn 50/50 lượt alias</b> của RevenueCat. Bạn cần dùng một UUID của tài khoản có Gold khác còn lượt chia sẻ để thực hiện nâng cấp!
+                      </span>
+                    </div>
+                  )}
 
                   <div className="text-xs sm:text-sm text-neutral-400 flex items-center justify-between pt-0.5">
                     <span>Dùng để alias kích hoạt gói Gold sang người nhận qua RevenueCat.</span>
