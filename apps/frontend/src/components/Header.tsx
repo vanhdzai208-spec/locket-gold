@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Camera, User, Crown, Fingerprint, ShieldCheck } from 'lucide-react';
+import { LogOut, Camera, User, Crown } from 'lucide-react';
 
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
@@ -12,8 +12,6 @@ export default function Header() {
 
   const isHome = pathname === '/';
   const isGold = pathname.startsWith('/gold');
-  const isUid = pathname.startsWith('/uid') || pathname.startsWith('/get-uid');
-  const isCheckGold = pathname.startsWith('/check-gold');
 
   return (
     <header className="w-full bg-[#16181F]/90 backdrop-blur-md border-b border-[#242731] sticky top-0 z-50">
@@ -39,12 +37,12 @@ export default function Header() {
         </div>
 
         {/* Center: Global Page Navigation Tabs (Always visible on all pages, responsive) */}
-        <nav className="flex items-center justify-center flex-1 max-w-xl mx-auto">
-          <div className="inline-flex p-1 sm:p-1.5 rounded-2xl bg-[#1A1D27]/90 backdrop-blur-md border border-white/[0.08] shadow-lg gap-0.5 sm:gap-1.5 overflow-x-auto max-w-full">
+        <nav className="flex items-center justify-center flex-1 max-w-md mx-auto">
+          <div className="inline-flex p-1 sm:p-1.5 rounded-2xl bg-[#1A1D27]/90 backdrop-blur-md border border-white/[0.08] shadow-lg gap-1 sm:gap-2 overflow-x-auto max-w-full">
             {/* Tab 1: Locket Web */}
             <Link
               href="/"
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs md:text-sm transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap ${
                 isHome
                   ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/25 font-bold'
                   : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] font-semibold'
@@ -58,47 +56,19 @@ export default function Header() {
             {/* Tab 2: Locket Gold */}
             <Link
               href="/gold"
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs md:text-sm transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap ${
                 isGold
                   ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/25 font-bold'
                   : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] font-semibold'
               }`}
-              title="Locket Gold - Nâng cấp tài khoản VIP"
+              title="Locket Gold VIP - Nâng cấp, Tra cứu UID & Kiểm tra Gold"
             >
               <Crown
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${
                   isGold ? 'text-black' : 'text-yellow-400'
                 }`}
               />
-              <span>Locket Gold</span>
-            </Link>
-
-            {/* Tab 3: Tra Cứu UID */}
-            <Link
-              href="/uid"
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs md:text-sm transition-all whitespace-nowrap ${
-                isUid
-                  ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/25 font-bold'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] font-semibold'
-              }`}
-              title="Tra Cứu UID Locket qua link"
-            >
-              <Fingerprint className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Tra Cứu UID</span>
-            </Link>
-
-            {/* Tab 4: Kiểm Tra Gold */}
-            <Link
-              href="/check-gold"
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs md:text-sm transition-all whitespace-nowrap ${
-                isCheckGold
-                  ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/25 font-bold'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] font-semibold'
-              }`}
-              title="Kiểm tra số ngày Locket Gold"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Kiểm Tra Gold</span>
+              <span>Locket Gold VIP</span>
             </Link>
           </div>
         </nav>
